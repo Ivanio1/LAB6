@@ -6,10 +6,7 @@ import server.CollectionManager;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Класс {@code AddIfMax} переопределяет метод {@code execute ()}, чтобы добавить {@link data.LabWork} в коллекцию,
@@ -90,7 +87,15 @@ public class AddIfMaxCommand extends AbstractCommand {
                 if (works.size() != 0) {
                     LabWork competitor = Collections.max(works);
                     if (competitor.getName().length() < W.getName().length()) {
-                        getManager().getWorks().add(W);
+                        works.add(W);
+                        works.sort(new Comparator<LabWork>() {
+                            @Override
+                            public int compare(LabWork o1, LabWork o2) {
+                                if(o1.getX()+o1.getY()==o2.getX()+o2.getY()) return 0;
+                                else if(o1.getX()+o1.getY()>o2.getX()+o2.getY()) return 1;
+                                else return -1;
+                            }
+                        });
                         getManager().save();
                         s = "Объект успешно добавлен.";
                     } else s = "Не удалось добавить элемент. Он меньше максимального.";

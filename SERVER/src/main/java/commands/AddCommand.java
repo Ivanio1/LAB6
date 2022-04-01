@@ -11,9 +11,7 @@ import java.net.Socket;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Класс {@code AddCommand} переопределяет метод {@code execute ()} для добавления {@link data.LabWork} в коллекцию.
@@ -88,7 +86,16 @@ public class AddCommand extends AbstractCommand {
                 answer="ERROR! Значение полей неверно.";
             }
             if(W!=null){
-            getManager().getWorks().add(W);
+                Vector<LabWork> works=getManager().getWorks();
+            works.add(W);
+                works.sort(new Comparator<LabWork>() {
+                    @Override
+                    public int compare(LabWork o1, LabWork o2) {
+                        if(o1.getX()+o1.getY()==o2.getX()+o2.getY()) return 0;
+                        else if(o1.getX()+o1.getY()>o2.getX()+o2.getY()) return 1;
+                        else return -1;
+                    }
+                });
            getManager().save();
            answer="Объект успешно добавлен.";}
             else answer="ERROR! Значение полей неверно.";
