@@ -10,10 +10,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Vector;
+import java.util.*;
 
 import static commands.AddCommand.create_id;
 
@@ -88,6 +85,14 @@ public class CollectionManager<TypeToken> {
                         }
 
                     }
+                   works.sort(new Comparator<LabWork>() {
+                       @Override
+                       public int compare(LabWork o1, LabWork o2) {
+                           if(o1.getX()+o1.getY()==o2.getX()+o2.getY()) return 0;
+                           else if(o1.getX()+o1.getY()>o2.getX()+o2.getY()) return 1;
+                           else return -1;
+                       }
+                   });
 
                 } catch (JsonSyntaxException ex) {
                     System.out.println("Ошибка синтаксиса Json. Коллекция не может быть загружена.");
