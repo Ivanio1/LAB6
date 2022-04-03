@@ -9,6 +9,10 @@ import java.net.SocketException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Класс {@code Server} представляет объект сервера, который манипулирует {@link CollectionManager}.
@@ -21,6 +25,7 @@ public class Server implements Runnable {
     private CollectionManager serverCollection;
     private Socket incoming;
     private HashMap<String, AbstractCommand> availableCommands;
+    private static final Logger logger = Logger.getLogger("Logger");
 
     /**
      * @param serverCollection обеспечивает доступ к коллекции.
@@ -50,7 +55,7 @@ public class Server implements Runnable {
     }
 
     /**
-     * Запускает активное соединение с клиентом в новом {@link Thread}.
+     * Запускает активное соединение с клиентом.
      */
     @Override
     public void run() {
@@ -70,7 +75,7 @@ public class Server implements Runnable {
                 try {
                     String requestFromClient = getFromClient.readObject().toString();
                     String[] parsedCommand = requestFromClient.trim().split(" ", 2);
-                    System.out.print("Получено [" + requestFromClient + "] от " + incoming + ". ");
+                    logger.log(Level.INFO,"Получено [" + requestFromClient + "] от " + incoming + ". ");
                     if (parsedCommand[0].equals("execute_script")) {
                         if(parsedCommand.length!=1){
                             scriptmode(parsedCommand[1], sendToClient, getFromClient);}else{
@@ -81,19 +86,20 @@ public class Server implements Runnable {
                         sendToClient.writeObject(availableCommands.getOrDefault(parsedCommand[0], errorCommand).execute());
                     else if (parsedCommand.length == 2)
                         sendToClient.writeObject(availableCommands.getOrDefault(parsedCommand[0], errorCommand).execute(parsedCommand[1]));
-                    System.out.println("Ответ успешно отправлен.");
+                    logger.log(Level.INFO,"Ответ успешно отправлен.");
                 } catch (SocketException e) {
-                    System.out.println(incoming + " отключился от сервера."); //Windows
+                    logger.log(Level.SEVERE,incoming + " отключился от сервера."); //Windows
                     flag=true;
                     while(flag){
                         String world=scanner.nextLine();
                         if(world.equals("save")){
                             serverCollection.save();
-                            System.out.println("Коллекция сохранена.");
-                            flag=false;
+                            logger.log(Level.INFO,"Коллекция сохранена.");
+                            flag=true;
                         }
                         if(world.equals("stop")){
-                            System.out.println("Завершение работы сервера.");
+                            serverCollection.save();
+                            logger.log(Level.INFO,"Завершение работы сервера.");
                             flag=false;
                             System.exit(0);
                         }
@@ -104,17 +110,17 @@ public class Server implements Runnable {
                 }
             }
         } catch (IOException | ClassNotFoundException ex) {
-            System.err.println(incoming + " отключился от сервера."); //Unix
+            logger.log(Level.SEVERE,incoming + " отключился от сервера."); //Unix
             flag=true;
             while(flag){
                 String world=scanner.nextLine();
                 if(world.equals("save")){
                     serverCollection.save();
-                    System.out.println("Коллекция сохранена.");
-                    flag=false;
+                    logger.log(Level.INFO,"Коллекция сохранена.");
+                    flag=true;
                 }
                 if(world.equals("stop")){
-                    System.out.println("Завершение работы сервера.");
+                    logger.log(Level.INFO,"Завершение работы сервера.");
                     flag=false;
                     System.exit(0);
                 }

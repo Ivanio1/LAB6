@@ -5,12 +5,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import commands.ClearCommand;
 import data.LabWork;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static commands.AddCommand.create_id;
 
@@ -28,6 +31,7 @@ public class CollectionManager<TypeToken> {
     private Date initDate;
     private Gson serializer;
     protected static HashMap<String, String> manual;
+    private static final Logger logger = Logger.getLogger("Logger");
 
     {
         serializer = new Gson();
@@ -46,7 +50,7 @@ public class CollectionManager<TypeToken> {
         try {
             if (collectionPath == null) throw new FileNotFoundException();
         } catch (FileNotFoundException ex) {
-            System.err.println("Путь к файлу должен быть задан через командную строку.");
+            logger.log(Level.SEVERE,"Путь к файлу должен быть задан через командную строку.");
             System.exit(1);
         }
         jsonCollection = new File(collectionPath);
@@ -56,7 +60,7 @@ public class CollectionManager<TypeToken> {
             if (jsonCollection.length() == 0) throw new Exception("Файл пуст");
             if (!jsonCollection.canRead() || !jsonCollection.canWrite()) throw new SecurityException();
             try (BufferedReader collectionReader = new BufferedReader(new FileReader(jsonCollection))) {
-                System.out.println("Загрузка коллекции " + jsonCollection.getAbsolutePath());
+                logger.log(Level.INFO,"Загрузка коллекции " + jsonCollection.getAbsolutePath());
                 String nextLine;
                 StringBuilder result = new StringBuilder();
                 while ((nextLine = collectionReader.readLine()) != null) {
@@ -71,7 +75,7 @@ public class CollectionManager<TypeToken> {
                 }.getType();
                 try {
                     works = serializer.fromJson(result.toString(), collectionType);
-                    System.out.println("Коллекция успешно загружена. Добавлено " + (works.size()) + " элементов.");
+                    logger.log(Level.INFO,"Коллекция успешно загружена. Добавлено " + (works.size()) + " элементов.");
                 
                     // System.out.println(works);
                     for (LabWork element : works) {
@@ -95,29 +99,29 @@ public class CollectionManager<TypeToken> {
                    });
 
                 } catch (JsonSyntaxException ex) {
-                    System.out.println("Ошибка синтаксиса Json. Коллекция не может быть загружена.");
+                    logger.log(Level.SEVERE,"Ошибка синтаксиса Json. Коллекция не может быть загружена.");
                     System.exit(1);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
         } catch (FileNotFoundException e) {
-            System.err.println("Файл по указанному пути не найден или он пуст.");
+            logger.log(Level.SEVERE,"Файл по указанному пути не найден или он пуст.");
             System.exit(1);
         } catch (SecurityException e) {
-            System.err.println("Файл защищён от чтения.");
+            logger.log(Level.SEVERE,"Файл защищён от чтения.");
             System.exit(1);
         } catch (IOException e) {
-            System.err.println("Что-то не так с файлом.");
+            logger.log(Level.SEVERE,"Что-то не так с файлом.");
             System.exit(1);
         } catch (Exception e) {
-            System.err.println("Файл пуст");
+            logger.log(Level.SEVERE,"Файл пуст");
             System.exit(1);
         }
     }
 
     public CollectionManager() {
-        System.out.println("Не был передан путь к файлу при запуске программы.");
+        logger.log(Level.INFO,"Не был передан путь к файлу при запуске программы.");
         System.exit(1);
     }
 

@@ -7,9 +7,13 @@ import java.net.Socket;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 public class ServerSide {
-
+    private static final Logger logger = Logger.getLogger("Logger");
     /**
      * Точка входа в программу. Управляет подключением к клиентам и созданием потоков для каждого из них.
      *
@@ -20,37 +24,22 @@ public class ServerSide {
         String inPath = "C:\\Users\\Asus\\IdeaProjects\\LAB6\\SERVER\\src\\main\\java\\server\\in.json";
         String outPath = "C:\\Users\\Asus\\IdeaProjects\\LAB6\\SERVER\\src\\main\\java\\server\\out.json";
 
-            try (ServerSocket server = new ServerSocket(8800)) {
+            try (ServerSocket server = new ServerSocket(8000)) {
                 CollectionManager serverCollection = new CollectionManager(args[0],args[1]);
-                System.out.print("Сервер начал слушать клиентов. " + "\nПорт " + server.getLocalPort() +
-                        " / Адрес " + InetAddress.getLocalHost() + ".\nОжидаем подключения клиентов ");
-                Thread pointer = new Thread(() -> {
-                    while (!Thread.currentThread().isInterrupted()) {
-                        System.out.print(".");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            System.out.print("\n");
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                });
-                pointer.setDaemon(true);
-                pointer.start();
+                logger.log(Level.INFO,"Сервер начал слушать клиентов. " + "\nПорт " + server.getLocalPort() +
+                        " / Адрес " + InetAddress.getLocalHost() + ".\nОжидаем подключения клиентов ... ");
                 while (true) {
                     Socket incoming = server.accept();
-                    pointer.interrupt();
-                    System.out.println(incoming + " подключился к серверу.");
-                    Runnable r = new Server(serverCollection, incoming);
-                    Thread t = new Thread(r);
-                    t.start();
+                    logger.log(Level.INFO,incoming + " подключился к серверу.");
+                    Server server1 = new Server(serverCollection, incoming);
+                   server1.run();
                 }
 
             } catch (IOException ex) {
-                System.err.println(ex.getMessage());
+                logger.log(Level.SEVERE,"Ошибка получения локального хоста.");
                 System.exit(1);
             }catch (ArrayIndexOutOfBoundsException e){
-                System.out.println("Не был передан путь к файлу при запуске программы.");
+                logger.log(Level.SEVERE,"Не был передан путь к файлу при запуске программы.");
 
         }
 
